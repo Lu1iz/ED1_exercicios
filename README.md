@@ -1,1 +1,1 @@
-# ED1_atividades
+# ED1_exercicios
