@@ -1,50 +1,58 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <time.h>
 
-#define N 10 
+/*Declare um Array contendo N números inteiros aleatórios no intervalo entre 0 e 99.
+Imprima o vetor sorteado originalmente, e faça a ordenação utilizando os seguintes
+algoritmos. Para cada versão, contabilize o número de comparações e permutações
+(trocas) necessárias para a ordenação do Array.
+	(b) Selection Sort*/
 
 int main() {
-    int arr[N] = {13, 99, 0, 20, 2, 7, 44, 49, 1, 11};
-    int i, j, temp, inicio, fim, meio, alvo, encontrado = 0;
+	int n, comp=0, perm=0;
+	
+	printf("Informe o valor de N: ");
+	scanf(" %d", &n);
+	printf("\n");
+	
+	int arr[n];
+	
+	srand(time(NULL));
+	
+	printf("Original: ");
+	for(int i=0; i<n; i++) {
+		arr[i]= rand()%100;
+		printf("%d ", arr[i]);
+	}
+	printf("\n");
+		
+	 for (int i=0; i<n-1; i++) {
+        int mind= i; 
 
-    for (i = 1; i < N; i++) {
-        temp = arr[i];
-        j = i - 1;
-        while (j >= 0 && arr[j] > temp) {
-            arr[j + 1] = arr[j];
-            j--;
+        for (int j=i+1; j<n; j++) {
+            comp++; 
+            
+            if (arr[j] < arr[mind]) {
+                mind= j;
+            }
         }
-        arr[j + 1] = temp;
+
+        if (mind != i) {
+            int temp = arr[i];
+            arr[i] = arr[mind];
+            arr[mind] = temp;
+            perm++;
+        }
     }
 
-    printf("Digite um numero para buscar: ");
-    scanf("%d", &alvo);
-
-    inicio = 0;
-    fim = N - 1;
-
-    while (inicio <= fim) {
-        meio = (inicio + fim) / 2;
-        if (arr[meio] == alvo) { 
-			printf("Numero %d encontrado na posicao %d.\n", alvo, meio);
-            encontrado = 1;
-            break;
-        } else if (arr[meio] < alvo) {
-            inicio = meio + 1; 
-        } else {
-            fim = meio - 1;
-        }
+    printf("Ordenado (Selection Sort): ");
+    for (int i = 0; i < n; i++) {
+        printf("%d ", arr[i]);
     }
-    
-    if(encontrado) {
-		printf("\nArray ordenado: ");
-			for (i = 0; i < N; i++) 
-				printf("%d ", arr[i]);
-		printf("\n");
-	}	
+    printf("\n");
 
-    if (!encontrado) 
-        printf("Numero %d nao encontrado.\n", alvo);
-
-    return 0;
+    printf("Comparações: %d\n", comp);
+    printf("Permutações: %d\n", perm);
+		
+	return 0;
 }
