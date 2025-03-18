@@ -21,7 +21,7 @@ typedef struct {
 void wait();
 int interface();
 Veiculo cadastrar_veiculo(int cod);
-Viagem cadastrar_viagem(Veiculo* bus, int cont);
+Viagem cadastrar_viagem(Veiculo* bus, int cont, Viagem* viagem, int cont_viagem);
 int busca_bus(Veiculo* bus, int cont);
 void vender_passagem(Viagem* viagem, int cont, Veiculo* bus, int cont_bus);
 int busca_origem(Viagem* viagem, int cont);
@@ -30,6 +30,7 @@ void relatorio_veiculos(Veiculo* bus, int cont_bus, Viagem* viagem, int cont);
 void relatorio_viagens_passagens(Viagem* viagem, int cont, Veiculo* bus, int cont_bus);
 int print_poltronas(Viagem* viagem, int cont, Veiculo* bus, int cont_bus, int ind_bus, int ind);
 void manutencao(Veiculo* bus, int cont_bus, Viagem* viagem, int cont);
+void substituir_viagem(Veiculo* bus, Viagem* viagem, int subs, int ind_subs, int cont, int ind_viag, int ind);
 
 // Funções estrutura
 void wait() {
@@ -83,7 +84,7 @@ Veiculo cadastrar_veiculo(int cod) {
 	return novo;	
 }
 
-Viagem cadastrar_viagem(Veiculo* bus, int cont) {
+Viagem cadastrar_viagem(Veiculo* bus, int cont, Viagem* viagem, int cont_viagem) {
 	system("clear");
 	
 	printf("==================================================\n");
@@ -109,6 +110,19 @@ Viagem cadastrar_viagem(Veiculo* bus, int cont) {
 		wait();
 		return viagem_vazia;
 	}		
+	
+	int s= 0;
+	for(int i=0; i<cont_viagem; i++)
+		if(bus[ind].cod == viagem[i].cod_vei) {
+			s= 1;
+			break;
+		}
+	if(s) {
+		printf("Veiculo cadastrado em outra viagem!\n");
+		Viagem viagem_vazia = { "", "", 0, {0}, 0.0 };
+		wait();
+		return viagem_vazia;
+	}	
     
     nova.cod_vei = bus[ind].cod;
     
@@ -447,25 +461,48 @@ void manutencao(Veiculo* bus, int cont_bus, Viagem* viagem, int cont) {
         return;
     }
 
-    int substituto_encontrado = 0;
+    int substituto_encontrado = 0, ind_subs;
     for (int i = 0; i < cont_bus; i++) {
         if (i != ind && bus[i].qnt_pass >= bus[ind].qnt_pass && bus[i].manutencao == 2) {
-            viagem[ind_viag].cod_vei = bus[i].cod;
             substituto_encontrado = 1;
+            ind_subs = i;
+            printf("%d encontrado para substituir %d\n",bus[i].cod, bus[ind].cod);
             break;
         }
     }
-
-    if (substituto_encontrado) {
-        printf("Veiculo %d enviado para manutenção. Substituído pelo veículo %d.\n", bus[ind].cod, viagem[ind_viag].cod_vei);
-        bus[ind].manutencao = 1;
-    } else {
-        printf("Veiculo está em viagem e não há reservas disponíveis!\n");
-    }
-
-    wait();
+	
+	substituir_viagem(bus, viagem, substituto_encontrado, ind_subs, cont, ind_viag, ind);
+	
+	return;
 }
 
+void substituir_viagem(Veiculo* bus, Viagem* viagem, int subs, int ind_subs, int cont, int ind_viag, int ind) {
+	printf("alterando dados de viagem...\n");
+	int subs_viagem= 0;
+    if (subs) {
+		for(int i=0; i<cont; i++)
+			if(viagem[i].cod_vei == bus[ind_subs].cod) {
+				subs_viagem = 1;
+				break;
+			}
+    } else {
+        printf("Veiculo está em viagem e não há reservas disponíveis!\n");
+        wait();
+        return;
+    }
+
+	if(!subs_viagem) {
+			viagem[ind_viag].cod_vei = bus[ind_subs].cod;
+			printf("Veiculo %d enviado para manutenção. Substituído pelo veículo %d.\n", bus[ind].cod, viagem[ind_viag].cod_vei);
+			bus[ind].manutencao = 1;
+			wait();
+			return;
+	}else {
+		printf("Veiculo está em viagem e não há reservas disponíveis!\n");
+        wait();
+        return;
+	}
+}
 
 int main() {
     srand(time(NULL));
@@ -483,7 +520,7 @@ int main() {
                 break;
 
             case 2:
-                viagem[cont_viagem] = cadastrar_viagem(bus, cont_bus);
+                viagem[cont_viagem] = cadastrar_viagem(bus, cont_bus, viagem, cont_viagem);
                 if (viagem[cont_viagem].cod_vei != 0)
                     cont_viagem++;
                 break;
